@@ -20,7 +20,7 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
 
     const tempWrap = document.createElement('div');
     tempWrap.innerHTML = sanitizedHTML;
-    
+
     const spannedText = wrapWithSpan(tempWrap.firstChild);
     console.log('editor spannedText', spannedText)
     editorSpanText(spannedText);
@@ -48,13 +48,13 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
   }
 
   function wrapWithSpan(pElement) {
-    
+
 
     let spanSelection = document.createElement('span');
     while (pElement.firstChild) {
       spanSelection.appendChild(pElement.firstChild);
     }
-    for (let i = pElement.attributes.length-1; i >= 0; i--) {
+    for (let i = pElement.attributes.length - 1; i >= 0; i--) {
       spanSelection.attributes.setNamedItem(pElement.attributes[i].cloneNode());
     }
     return spanSelection.outerHTML;
@@ -62,16 +62,16 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
 
   const modules = {
     toolbar: [
-      [{'font': []}],
-      [{ 'header': [1, 2,3,4,5,6, false] }],
+      // [{'font': []}],
+      // [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'color': []}, {'background': []}],
-      [{'align': []}],
-      [{ 'direction': 'rtl' }],
-      [{ 'script': 'sub' }, { 'script': 'super' }],
-      ['blockquote', 'code-block'],
-      ['clean']
+      // [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      // [{ 'color': []}, {'background': []}],
+      // [{'align': []}],
+      // [{ 'direction': 'rtl' }],
+      // [{ 'script': 'sub' }, { 'script': 'super' }],
+      // ['blockquote', 'code-block'],
+      // ['clean']
     ]
   }
 
@@ -80,6 +80,7 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
       ref={quillRef}
       modules={modules}
       onChange={updateHTMLPreview}
+      // onChangeSelection={(range, s, editor) => { updateSelection(range, editor) }}
       style={{
         height: '80%'
       }} />
@@ -87,4 +88,3 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
 }
 
 
-// onChangeSelection={(range, s, editor) => { updateSelection(range, editor) }}

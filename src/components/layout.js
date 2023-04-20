@@ -11,21 +11,18 @@ export default function Layout({ children }) {
     <>
       <Header />
       <Grid container spacing={2}>
-        <Grid 
+        <Grid
           xs={6}
-          sx={{
-            // display: 'flex',
-            // flexDirection: 'column'
-          }}>
+        >
           <Item
-            sx={{ 
-              height: '400px' 
+            sx={{
+              height: '400px'
             }}
           >{children[0]}</Item>
         </Grid>
         <Grid xs={6}>
           <Item
-            sx={{ 
+            sx={{
               height: '400px',
               textAlign: 'left'
             }}>
