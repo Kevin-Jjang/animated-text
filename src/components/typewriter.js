@@ -1,16 +1,17 @@
-import { createElement, useState } from "react";
+import { useState } from "react";
 import TypewriterControls from "./typewriterControls";
+import QueueList from "./queueList";
 
 export default function Typewriter({ editorText, editorSpanText, selectedText, selectedDelta }) {
-  const [typewriterData, setTypewriterData] = useState(Array(1).fill(null));
+  const [typewriterData, setTypewriterData] = useState(Array(1).fill({typewriterOps: null, queue: 0}));
   const [typewriterOps, setTypewriterOps] = useState(
     {
-      content: editorText,
+      content: selectedDelta,
       type: 'char',
       rate: 40,
-      delay: 1000
+      delay: 1000,
+      queue: 0
     });
-
 
 
 
@@ -30,7 +31,9 @@ export default function Typewriter({ editorText, editorSpanText, selectedText, s
       <div>
         <p>Current Selection: {selectedText}</p>
       </div>
+      <QueueList>
 
+      </QueueList>
     </>
   );
 }
@@ -42,12 +45,12 @@ export function deleteAllAnimations({ setTypewriterData, setTypewriterOps }) {
 
 export function animateEntireEditor({ typewriterOps }) {
   console.log(typewriterOps)
-  const { content, rate, delay, type } = typewriterOps;
+  const { content, rate, delay, type, queue } = typewriterOps;
 
-  const taggedOps = preprocessDeltaContent(content);
+  const { taggedOps, tagBreakpoints } = preprocessDeltaContent(content);
 
   if (type === 'char') {
-    writeTextDelta(taggedOps, rate, delay);
+    writeTextDelta(taggedOps, rate, delay, queue, tagBreakpoints);
   } else {
     console.log('word is not implemented');
     return;
@@ -66,38 +69,54 @@ const attributeTypes = {
   'sup': 'sup'
 };
 
-const newLine = {
-  '\\n': '<br/>'
-};
-
-
 function preprocessDeltaContent(delta) {
   const ops = delta['ops'];
+  let tagBreakpoints = [];
   ops.forEach(op => {
-  // let text = op['insert'];
-  // console.log(text);
-  // console.log(ops, ops['insert']);
-  op['insert'] = op['insert'].replace(/\n/g, '<br/>');
-  // console.log(tArr);
+    const text = op['insert'];
+    op['insert'] = op['insert'].replace('<script>', ''); // Remove main XSS script attack
+    op['insert'] = op['insert'].replace(/\n/g, '<br/>');
+    tagBreakpoints.push(findTagIdx('<br/>', text));
   });
-
-  return delta;
+  console.log('breakpoints', tagBreakpoints)
+  const taggedOps = delta;
+  return { taggedOps, tagBreakpoints };
 }
 
+function findTagIdx(tag, string) {
+  let a = [], i = -1;
+  while ((i = string.indexOf(tag, i + 1)) >= 0) {
+    // console.log('found at i:', i);
+    a.push({ tag: tag, i: i });
+  }
+  return a;
+}
 
-async function writeTextDelta(delta, rate, delay) {
+async function writeTextDelta(delta, rate, delay, queue, tagBreakpoints) {
   return new Promise(async (resolve) => {
     const ops = delta['ops'];
-    console.log(ops)
     const outBlock = document.getElementById('output-text');
     outBlock.innerHTML = '';
 
     let opIdx = 0, charIdx = 0, opsLen = ops.length;
     let wrapper = document.createElement('span');
+    wrapper.id = queue;
     let styledBlock, textNodePointer;
     let startTags = [], endTags = [];
 
+    tagBreakpoints.sort(function (a, b) {
+      return a.i < b.i;
+    });
+
+    let tagB = [], idxB = [], b = 0;
+    for (let i = 0; i < tagBreakpoints[0].length; i++) {
+      tagB.push(tagBreakpoints[0][i]['tag']);
+      idxB.push(tagBreakpoints[0][i]['i']);
+    }
+
+    console.log(tagB, idxB)
     outBlock.appendChild(wrapper);
+  
     while (opIdx < opsLen) {
       const attributes = ops[opIdx]['attributes'];
       const deltaChars = ops[opIdx]['insert'];
@@ -125,17 +144,15 @@ async function writeTextDelta(delta, rate, delay) {
       // console.log('pointer:', textNodePointer);
 
 
-      const nextChar = deltaChars[charIdx++];
-      console.log(nextChar);
-      if (nextChar === '<') {
-        textNodePointer.innerHTML += '<br/>';
-        charIdx += 4
-        console.log('insert <br/>', textNodePointer)
+      // const nextChar = deltaChars[charIdx++];
+      // console.log(nextChar);
+      if (charIdx === idxB[b]) {
+        textNodePointer.innerHTML += tagB[b];
+        charIdx += tagB[b].length;
+        b++;
       } else {
-        textNodePointer.innerHTML += nextChar;
+        textNodePointer.innerHTML += deltaChars[charIdx++];
       }
-      // console.log(charIdx);
-
       // console.log('wrapafter', wrapper);
       // console.log('styled', styledBlock.firstChild);
       if (charIdx >= deltaChars.length) {
@@ -150,7 +167,7 @@ async function writeTextDelta(delta, rate, delay) {
         }
       }
       await new Promise((resolveInner) => {
-        console.log('inpromise');
+        // console.log('inpromise');
         setTimeout(resolveInner, rate);
       })
     }
@@ -169,43 +186,3 @@ function getDeepestNode(node) {
   }
   return getDeepestNode(node.firstChild);
 }
-
-
-// let writeStream = window.setInterval(() => {
-//   console.log(opIdx)
-//   if (opIdx < opsLen) {
-//     const attributes = ops[opIdx]['attributes'];
-//     const deltaChars = ops[opIdx]['insert'];
-
-//     const nextChar = deltaChars[charIdx++];
-//     // Create the tags
-//     if (attributes !== undefined && startTags.length === 0) {
-//       for (let key in attributes) {
-//         if (attributeTypes[key] === undefined) { continue; }
-//         startTags.push(`<${attributeTypes[key]}>`);
-//         endTags.push(`</${attributeTypes[key]}>`)
-//       }
-//       let temp = document.createElement('div');
-//       temp.innerHTML = startTags.join('') + endTags.join('');
-//       console.log('temp', temp, temp.firstChild);
-//       wrapper.append(temp.firstChild);
-//       textNodePointer = getDeepestNode(wrapper);
-//       console.log('pointer:', textNodePointer);
-//     } else {
-//       textNodePointer = wrapper;
-//     }
-
-//     textNodePointer.textContent += nextChar;
-//     console.log('after char', textNodePointer);
-//     console.log('wrapafter', wrapper);
-
-//     if (charIdx == deltaChars.length) {
-//       opIdx++;
-//       charIdx = 0;
-//       startTags = endTags = [];
-//     }
-//   } else {
-//     clearInterval(writeStream);
-//     setTimeout(() => { return resolve(delta); }, delay);
-//   }
-// }, rate);

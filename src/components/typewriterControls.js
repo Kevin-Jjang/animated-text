@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Button, FormControl, FormControlLabel, FormLabel, IconButton, InputAdornment, Radio, RadioGroup, TextField, Toolbar } from "@mui/material";
+import { Box, Button, FormControl, FormControlLabel, FormLabel, Icon, IconButton, InputAdornment, Radio, RadioGroup, TextField, Toolbar } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -37,7 +37,8 @@ export default function TypewriterControls({ editorText, editorSpanText, selecte
       content: selectedDelta,
       type: formJson['type'],
       rate: formJson['rate'],
-      delay: formJson['delay']
+      delay: formJson['delay'],
+      queue: 0
     });
     setOpenAdd(false);
   }

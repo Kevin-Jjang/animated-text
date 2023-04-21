@@ -1,4 +1,10 @@
-# Getting Started with Create React App
+# typewrite.it
+(In development) A client-sided React web app for writers to animate their poetry and prose!
+
+Inspired by my vanilla JS typewriter program for the poem "[missed connections (1 new post)](https://otherpeoplesd.com/missed-connections)", the motivation behind this personal project is to allow non-developers to create their own typewritten works and publish them into any publication website via embedded HTML and JS. 
+
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

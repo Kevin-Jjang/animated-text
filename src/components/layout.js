@@ -31,7 +31,7 @@ export default function Layout({ children }) {
         </Grid>
         <Grid xs={12}>
           <Item
-            sx={{ height: '200px' }}>
+            sx={{ height: 'auto' }}>
             {children[2]}
           </Item>
         </Grid>

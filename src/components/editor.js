@@ -24,6 +24,7 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
     const spannedText = wrapWithSpan(tempWrap.firstChild);
     console.log('editor spannedText', spannedText)
     editorSpanText(spannedText);
+    currentSelection(spannedText);
     const delta = unprivilegedEditor.getContents();
     selectedDelta(delta);
   }
@@ -48,8 +49,6 @@ export default function Editor({ onEditorTextChange, currentSelection, selectedD
   }
 
   function wrapWithSpan(pElement) {
-
-
     let spanSelection = document.createElement('span');
     while (pElement.firstChild) {
       spanSelection.appendChild(pElement.firstChild);
